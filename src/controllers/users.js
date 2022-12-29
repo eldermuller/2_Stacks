@@ -1,4 +1,5 @@
 const knex = require('../database/connection');
+const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
 const userRegister = async (req, res) => {
@@ -14,12 +15,18 @@ const userRegister = async (req, res) => {
         const encryptedPassword = await bcrypt.hash(password, 10);
 
         const userData = await knex('users').insert({
+            id: uuid.v4(),
             email,
             password: encryptedPassword
         });
 
         return res.status(200).json("Registration successful")
     } catch (error) {
+        console.log(error);
         return res.status(400).json(error.message);
     };
+};
+
+module.exports = {
+    userRegister
 };

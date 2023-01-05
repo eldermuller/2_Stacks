@@ -48,7 +48,45 @@ const getUser = async (req, res) => {
     };
 };
 
+const profileEdit = async (req, res) => {
+    let { username, biography } = req.body;
+    const { id } = req.user;
+
+    try {
+        if (username.trim() === "") {
+            return res.status(400).json("The username must be provided");
+        };
+
+        if (biography.trim() === "") {
+            return res.status(400).json("The bio must be provided");
+        };
+
+        const userExists = await knex('users').where({ id }).first();
+
+        if (!userExists) {
+            return res.status(404).json("User not found");
+        };
+
+        const profileupdate = await knex('users')
+            .where({ id })
+            .update({
+                username,
+                biography
+            })
+            .returning("*");
+
+        if (!profileupdate) {
+            return res.status(400).json("The profile was not changed")
+        };
+
+        return res.status(200).json("the profile was updated");
+    } catch (error) {
+        return res.status(500).json(error.message);
+    };
+};
+
 module.exports = {
     userRegister,
-    getUser
+    getUser,
+    profileEdit
 };

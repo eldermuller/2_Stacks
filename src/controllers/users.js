@@ -36,10 +36,19 @@ const userRegister = async (req, res) => {
 
         return res.status(200).json("Registration successful")
     } catch (error) {
-        return res.status(400).json(error.message);
+        return res.status(500).json(error.message);
+    };
+};
+
+const getUser = async (req, res) => {
+    try {
+        return res.status(200).json(req.user);
+    } catch (error) {
+        return res.status(500).json(error.message);
     };
 };
 
 module.exports = {
-    userRegister
+    userRegister,
+    getUser
 };

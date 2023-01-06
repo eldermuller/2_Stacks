@@ -85,8 +85,55 @@ const profileEdit = async (req, res) => {
     };
 };
 
+const updatePassword = async (req, res) => {
+    const { password, confirmPassword, newPassword, confirmNewPassword } = req.body;
+    const { id } = req.user;
+
+    try {
+        if (password.trim() === "" || confirmPassword.trim() === "" || newPassword.trim() === "" || confirmNewPassword.trim() === "") {
+            return res.status(400).json("All fields are required");
+        }
+
+        const user = await knex('users').where({ id }).first();
+
+        if (password !== confirmPassword) {
+            return res.status(400).json("Passwords do not match");
+        };
+
+        const passwordCompare = await bcrypt.compare(password, user.password);
+
+        if (!passwordCompare) {
+            return res.status(401).json("Password invalid");
+        };
+
+
+        if (newPassword !== confirmNewPassword) {
+            return res.status(400).json("New passwords do not match");
+        };
+
+        const encriptedPassword = await bcrypt.hash(newPassword, 10);
+
+        const passwordUpdate = await knex('users')
+            .where({ id })
+            .update({
+                password: encriptedPassword
+            })
+            .returning("*");
+
+        if (!passwordUpdate) {
+            return res.status(400).json("The password was not changed")
+        };
+
+        return res.status(200).json("Password successfully changed!");
+    } catch (error) {
+        return res.status(500).json(error.message);
+    };
+
+};
+
 module.exports = {
     userRegister,
     getUser,
-    profileEdit
+    profileEdit,
+    updatePassword
 };
